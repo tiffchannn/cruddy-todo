@@ -10,6 +10,15 @@ var items = {};
 exports.create = (text, callback) => {
   var id = counter.getNextUniqueId();
   items[id] = text;
+  var newFile = path.join(__dirname, `./data/${id}.txt`);
+  fs.writeFile(newFile, text, (err) => {
+    if (err) {
+      throw ('error making todo');
+    } else {
+      // callback(null, { id, text });
+      return text;
+    }
+  });
   callback(null, { id, text });
 };
 
