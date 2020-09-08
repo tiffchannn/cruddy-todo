@@ -23,6 +23,26 @@ exports.create = (text, callback) => {
 };
 
 exports.readAll = (callback) => {
+  var dirToRead = path.join(__dirname, '/data');
+  fs.readdir(dirToRead, (err, fileNames) => {
+    if (err) {
+      throw ('reading error');
+    } else {
+      fileNames.forEach((fileName) => {
+        fs.readFile(dirToRead + '/' + fileName, (err, content) => { // /datastore/data/00000.txt
+          console.log('fileName: ', fileName.substring(0, 5));
+          if (err) {
+            console.log(err);
+            throw ('reading individual file error');
+          } else {
+            items[fileName.substring(0, 5)] = fileName.substring(0, 5);
+          }
+        });
+      });
+    }
+  });
+
+  console.log('items obj', items);
   var data = _.map(items, (text, id) => {
     return { id, text };
   });
