@@ -7,6 +7,7 @@ var items = {};
 
 // Public API - Fix these CRUD functions ///////////////////////////////////////
 
+
 exports.create = (text, callback) => {
   var id = counter.getNextUniqueId();
   items[id] = text;
@@ -30,9 +31,7 @@ exports.readAll = (callback) => {
     } else {
       fileNames.forEach((fileName) => {
         fs.readFile(dirToRead + '/' + fileName, (err, content) => { // /datastore/data/00000.txt
-          console.log('fileName: ', fileName.substring(0, 5));
           if (err) {
-            console.log(err);
             throw ('reading individual file error');
           } else {
             items[fileName.substring(0, 5)] = fileName.substring(0, 5);
@@ -50,32 +49,54 @@ exports.readAll = (callback) => {
 };
 
 exports.readOne = (id, callback) => {
+  var dirToRead = path.join(__dirname, '/data');
   var text = items[id];
-  if (!text) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    callback(null, { id, text });
-  }
+
+  var fileName = id + '.txt';
+
+  fs.readFile(dirToRead + '/' + `${id}.txt`, (err, content) => {
+    if (err) {
+      callback(new Error(`No item with id: ${id}`));
+    } else {
+      var toDoItem = {'id': id, 'text': content.toString()};
+      callback(null, toDoItem );
+    }
+  });
 };
 
 exports.update = (id, text, callback) => {
+  var dirToRead = path.join(__dirname, '/data');
   var item = items[id];
   if (!item) {
     callback(new Error(`No item with id: ${id}`));
   } else {
-    items[id] = text;
-    callback(null, { id, text });
+    fs.writeFile(dirToRead + '/' + `${id}.txt`, text, (err) => {
+      if (err) {
+        throw ('error at updating file');
+      } else {
+        items[id] = text;
+        callback(null, { id, text });
+      }
+    });
   }
 };
 
 exports.delete = (id, callback) => {
+  var dirToRead = path.join(__dirname, '/data');
   var item = items[id];
-  delete items[id];
   if (!item) {
     // report an error if item not found
     callback(new Error(`No item with id: ${id}`));
   } else {
-    callback();
+    delete items[id];
+    fs.unlink(dirToRead + '/' + `${id}.txt`, (err) => {
+      if (err) {
+        throw err;
+      } else {
+        console.log('successfully deleted');
+        callback();
+      }
+    });
   }
 };
 
